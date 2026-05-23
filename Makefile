@@ -22,30 +22,23 @@ env-forwarder-up:
 env-forwarder-down:
 	@docker compose down port-forwarder
 
-
-migrate-create:
-	@if "$(seq)"=="" ( \
-		echo Missing required parameter seq && \
+migrate-goose-create:
+	@if "$(name)"=="" ( \
+		echo Missing required parameter name && \
 		exit 1 \
 	)
-	@docker compose run --rm company_structure_migrate \
-		create \
-		-ext sql \
-		-dir /migrations \
-		-seq "$(seq)"
+	@docker compose run --rm --entrypoint goose \
+	company_structure_migrate-goose create "$(name)" sql
 
-migrate-up:
-	@make migrate-action action=up
+migrate-goose-up:
+	@make migrate-goose-action action=up
 
-migrate-down:
-	@make migrate-action action=down
+migrate-goose-down:
+	@make migrate-goose-action action=down
 
-migrate-action:
+migrate-goose-action:
 	@if "$(action)"=="" ( \
 	echo Missing required parameter action && \
 	exit 1 \
 	)
-	@docker compose run --rm company_structure_migrate \
-	-path /migrations \
-	-database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@company_structure_postgres:5432/${POSTGRES_DB}?sslmode=disable" \
-	"${action}"
+	@docker compose run --rm company_structure_migrate-goose $(action)

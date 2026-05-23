@@ -14,9 +14,20 @@ services:
     image: migrate/migrate:v4.19.1
     volumes: 
       - ${PROJECT_ROOT}/migrations:/migrations
+
+  company_structure_migrate-goose:
+    image: kukymbr/goose-docker:3.27.1
+    entrypoint: ["goose"]
+    volumes: 
+      - ${PROJECT_ROOT}/migrations:/migrations
+    working_dir: /migrations
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@company_structure_postgres:5432/${POSTGRES_DB}?sslmode=disable"
+
   port-forwarder:
     image: alpine/socat:1.8.0.3
     container_name: company_structure-postgres-forwarder
-    comand: tcp-listen:5432,fork,reuseadr tcp-connect:company_structure_postgres:5432
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:company_structure_postgres:5432
     ports:
-      - "127.0.0.0.1:5432:5432"
+      - "127.0.0.1:5434:5432"
